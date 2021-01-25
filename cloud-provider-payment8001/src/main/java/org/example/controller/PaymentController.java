@@ -1,14 +1,18 @@
 package org.example.controller;
 
 
+
 import lombok.extern.slf4j.Slf4j;
 import org.example.entities.CommonResult;
 import org.example.entities.Payment;
 import org.example.service.PaymentService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -17,6 +21,8 @@ public class PaymentController {
     private PaymentService paymentService;
     @Value("${server.port}")
     private String serverPort;
+    @Resource
+    private DiscoveryClient discoveryClient;//服务发现来获取该服务的信息
     @PostMapping(value = "/payment/create")
     public CommonResult create(@RequestBody Payment payment) {
         int i = paymentService.create(payment);
@@ -41,6 +47,19 @@ public class PaymentController {
             return new CommonResult(444,"查询失败！",null);
         }
     }
+    //获取服务的信息
+    @GetMapping(value = "/payment/discovery")
+    public Object discovery(){
+        List<String> services = discoveryClient.getServices();
+        for (String str: services) {
+            log.info("*****str: "+str);
+        }
 
+        List<ServiceInstance> instances = discoveryClient.getInstances("CLOUD-PAYMENT-SERVICE");
+        for (ServiceInstance serviceInstance:instances) {
+            log.info(serviceInstance.getInstanceId()+"\t"+serviceInstance.getHost()+"\t"+serviceInstance.getPort()+"\t"+serviceInstance.getUri());
+        }
+        return discoveryClient;
+    }
 
 }
