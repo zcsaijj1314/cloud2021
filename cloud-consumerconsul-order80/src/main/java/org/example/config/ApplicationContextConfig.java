@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class ApplicationContextConfig {
     @Bean
-    //@LoadBalanced注释掉该注解是因为自己手写了一个轮询的算法，没有使用Ribbon自己的
+    @LoadBalanced
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
     }
